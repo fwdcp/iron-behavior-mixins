@@ -24,7 +24,7 @@
         __waitForDocumentLoad() {
             if (!this.__waitingForDocumentLoad) {
                 function checkAndExecuteCallback() {
-                    if (document.readyState !== 'interactive') {
+                    if (document.readyState !== 'interactive' && document.readyState !== 'complete') {
                         Polymer.AsyncRender.beforeRender(checkAndExecuteCallback);
                         return;
                     }
