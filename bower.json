@@ -1,0 +1,20 @@
+{
+  "name": "iron-behavior-mixins",
+  "homepage": "https://github.com/fwdcp/iron-behavior-mixins",
+  "authors": [
+    "Forward Command Post (http://fwdcp.net)"
+  ],
+  "description": "iron behaviors ported to mixins for use with Polymer 2.0",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "mixwith": "fwdcp/mixwith"
+  }
+}

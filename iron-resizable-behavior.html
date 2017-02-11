@@ -1,0 +1,158 @@
+<script src="../mixwith/mixwith.js"></script>
+
+<link rel="import" href="./iron-loading-behavior.html">
+
+<script>
+    if (!window.IronBehaviors) {
+        window.IronBehaviors = {};
+    }
+
+    window.IronBehaviors.IronResizableBehavior = Mixin(superclass => class extends apply(superclass, window.IronBehaviors.IronLoadingBehavior) {
+        constructor() {
+            super();
+
+            this.addEventListener('iron-request-resize-notifications', this._onIronRequestResizeNotifications.bind(this));
+
+            this._isConnected = false;
+            this._interestedResizables = [];
+            this._boundNotifyResize = this.notifyResize.bind(this);
+            this._boundDescendantIronResize = this._onDescendantIronResize.bind(this);
+        }
+
+        static get config() {
+            let config = super.config();
+
+            if (!config.properties) {
+                config.properties = {};
+            }
+            config.properties._parentResizable = {
+                type: Object,
+                observer: '_parentResizableChanged'
+            };
+            config.properties._notifyingDescendant = {
+                type: Boolean,
+                value: false
+            };
+
+            return config;
+        }
+
+        connectedCallback() {
+            super.connectedCallback();
+
+            this._isConnected = true;
+
+            this._onDocumentLoaded(function() {
+                this.dispatchEvent(new CustomEvent('iron-request-resize-notifications', {
+                    bubbles: true,
+                    cancelable: true
+                }));
+
+                if (!this._parentResizable) {
+                    window.addEventListener('resize', this._boundNotifyResize);
+                    this.notifyResize();
+                }
+            }.bind(this));
+        }
+
+        disconnectedCallback() {
+            super.disconnectedCallback();
+
+            this._isConnected = false;
+
+            if (this._parentResizable) {
+                this._parentResizable.stopResizeNotificationsFor(this);
+            }
+            else {
+                window.removeEventListener('resize', this._boundNotifyResize);
+            }
+
+            this._parentResizable = null;
+        }
+
+        notifyResize() {
+            if (!this._isConnected) {
+                return;
+            }
+
+            for (let resizable of this._interestedResizables) {
+                if (this.resizerShouldNotify(resizable)) {
+                    this._notifyDescendant(resizable);
+                }
+            }
+
+            this._fireResize();
+        }
+
+        assignParentResizable(parentResizable) {
+            this._parentResizable = parentResizable;
+        }
+
+        stopResizeNotificationsFor(target) {
+            let index = this._interestedResizables.indexOf(target);
+
+            if (index > -1) {
+                this._interestedResizables.splice(index, 1);
+                target.removeEventListener('iron-resize', this._boundDescendantIronResize);
+            }
+        }
+
+        resizerShouldNotify(element) {
+            if (!super.resizerShouldNotify) {
+                return true;
+            }
+
+            return super.resizerShouldNotify(element);
+        }
+
+        _onDescendantIronResize(event) {
+            if (this._notifyingDescendant) {
+                event.stopPropagation();
+                return;
+            }
+
+            if (!Polymer.Settings.useShadow || (window.ShadyDOM && window.ShadyDOM.inUse)) {
+                this._fireResize();
+            }
+        }
+
+        _fireResize() {
+            this.dispatchEvent(new CustomEvent('iron-resize', {
+                bubbles: false
+            }));
+        }
+
+        _onIronRequestResizeNotifications(event) {
+            let target = event.composedPath()[0];
+
+            if (target === this) {
+                return;
+            }
+
+            if (this._interestedResizables.indexOf(target) === -1) {
+                this._interestedResizables.push(target);
+                target.addEventListener('iron-resize', this._boundDescendantIronResize);
+            }
+
+            target.assignParentResizable(this);
+            this._notifyDescendant(target);
+            event.stopPropagation();
+        }
+
+        _parentResizableChanged(parentResizable) {
+            if (parentResizable) {
+                window.removeEventListener('resize', this._boundNotifyResize);
+            }
+        }
+
+        _notifyDescendant(descendant) {
+            if (!this._isConnected) {
+                return;
+            }
+
+            this._notifyingDescendant = true;
+            descendant.notifyResize();
+            this._notifyingDescendant = false;
+        }
+    });
+</script>
