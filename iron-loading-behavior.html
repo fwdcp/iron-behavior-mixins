@@ -5,7 +5,7 @@
         window.IronBehaviors = {};
     }
 
-    window.IronBehaviors.IronLoadingBehavior = Mixin(superclass => class extends superclass {
+    window.IronBehaviors.IronLoadingBehavior = mixwith.Mixin(superclass => class extends superclass {
         _onDocumentLoaded(callback) {
             if (this.__documentLoaded) {
                 callback();

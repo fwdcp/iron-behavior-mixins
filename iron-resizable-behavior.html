@@ -7,7 +7,7 @@
         window.IronBehaviors = {};
     }
 
-    window.IronBehaviors.IronResizableBehavior = Mixin(superclass => class extends apply(superclass, window.IronBehaviors.IronLoadingBehavior) {
+    window.IronBehaviors.IronResizableBehavior = mixwith.Mixin(superclass => class extends mixwith.apply(superclass, window.IronBehaviors.IronLoadingBehavior) {
         constructor() {
             super();
 
