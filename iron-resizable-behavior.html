@@ -20,7 +20,7 @@
         }
 
         static get config() {
-            let config = super.config();
+            let config = super.config || {};
 
             if (!config.properties) {
                 config.properties = {};
