@@ -23,9 +23,9 @@
 
         __waitForDocumentLoad() {
             if (!this.__waitingForDocumentLoad) {
-                function checkAndExecuteCallback() {
+                let onFrame = function checkDocumentLoadAndExecuteCallbacks() {
                     if (document.readyState !== 'interactive' && document.readyState !== 'complete') {
-                        Polymer.AsyncRender.beforeRender(checkAndExecuteCallback);
+                        requestAnimationFrame(onFrame);
                         return;
                     }
 
@@ -34,9 +34,9 @@
                     for (let callback of this.__documentLoadCallbacks) {
                         callback();
                     }
-                }
+                }.bind(this);
 
-                Polymer.AsyncRender.beforeRender(checkAndExecuteCallback.bind(this));
+                requestAnimationFrame(onFrame);
 
                 this.__waitingForDocumentLoad = true;
             }
